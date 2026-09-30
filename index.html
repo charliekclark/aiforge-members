@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Forge members</title>
+  <meta name="description" content="The members of AI Forge, Marquette's AI engineering organization.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --page: #0f2746;
+      --plate: #17345c;
+      --plate-edge: #2a5088;
+      --gold: #ffcc00;
+      --text: #eaf0f8;
+      --muted: #aabcd7;
+      --display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+      --body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+      --chamfer: 32px;
+    }
+
+    * { box-sizing: border-box; }
+    html { color-scheme: dark; }
+
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--text);
+      font-family: var(--body);
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+
+    .wrap {
+      max-width: 72rem;
+      margin: 0 auto;
+      padding: 3.5rem 1.5rem 5rem;
+    }
+
+    header { margin-bottom: 3rem; }
+
+    h1 {
+      margin: 0 0 1rem;
+      font-family: var(--display);
+      font-weight: 800;
+      font-size: clamp(3.5rem, 11vw, 7rem);
+      line-height: 0.9;
+    }
+
+    .lede {
+      max-width: 34rem;
+      margin: 0 0 0.5rem;
+      color: var(--muted);
+      font-size: 1.125rem;
+    }
+
+    .count { margin: 0; font-weight: 600; }
+
+    .notice {
+      max-width: 40rem;
+      margin: 0 0 2rem;
+      padding: 1rem 1.25rem;
+      background: var(--plate);
+      border-left: 4px solid var(--gold);
+    }
+
+    code {
+      padding: 0.1em 0.35em;
+      background: rgba(255, 255, 255, 0.1);
+      font-size: 0.9em;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+      gap: 1.5rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .grid > li { display: flex; }
+
+    .card {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      background: var(--plate);
+      clip-path: polygon(0 0, calc(100% - var(--chamfer)) 0, 100% var(--chamfer), 100% 100%, 0 100%);
+    }
+
+    .photo {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+      background: var(--plate-edge);
+    }
+
+    .photo img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .initials {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: var(--gold);
+      font-family: var(--display);
+      font-weight: 800;
+      font-size: 5rem;
+    }
+
+    .year {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      padding: 0.25rem 0.75rem;
+      background: var(--gold);
+      color: var(--page);
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .body {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      gap: 0.75rem;
+      padding: 1.25rem 1.25rem 1.5rem;
+    }
+
+    .name {
+      margin: 0;
+      font-family: var(--display);
+      font-weight: 800;
+      font-size: 2rem;
+      line-height: 1;
+    }
+
+    .role {
+      margin: -0.25rem 0 0;
+      color: var(--gold);
+      font-weight: 500;
+    }
+
+    dl { margin: 0; }
+    dd { margin: 0; }
+    dd + dt + dd { margin-top: 0.25rem; }
+    .hometown { color: var(--muted); }
+
+    .sr {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+    }
+
+    a { color: var(--gold); font-weight: 600; text-underline-offset: 0.25em; }
+    a:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+    .card .link { margin-top: auto; }
+
+    .card.open {
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 1.5rem;
+      background: transparent;
+      border: 2px dashed var(--plate-edge);
+      clip-path: none;
+    }
+
+    .card.open p { margin: 0; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>AI Forge</h1>
+      <p class="lede">Members of Marquette's AI engineering organization. Every card here arrived as a pull request.</p>
+      <p class="count" id="count" aria-live="polite">Loading members</p>
+    </header>
+
+    <main>
+      <div id="notice"></div>
+      <ul class="grid" id="grid"></ul>
+      <noscript><p class="notice">This page needs JavaScript to show the member cards.</p></noscript>
+    </main>
+  </div>
+
+  <script>
+    const REPO = 'https://github.com/charliekclark/aiforge-members';
+    const LINKEDIN = /^https:\/\/([a-z]{2,3}\.)?linkedin\.com\/in\/[^\s/?#]+\/?$/i;
+    const PHOTO = /^photos\/[a-z0-9][a-z0-9._-]*\.(jpe?g|png|webp)$/i;
+
+    // Cards are built with DOM calls and textContent, never innerHTML,
+    // so a card can't inject markup into the page.
+    function el(tag, className, text) {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text !== undefined) node.textContent = text;
+      return node;
+    }
+
+    function initialsOf(name) {
+      const parts = name.trim().split(/\s+/);
+      const first = parts[0] || '';
+      const last = parts.length > 1 ? parts[parts.length - 1] : '';
+      return (first.charAt(0) + last.charAt(0)).toUpperCase();
+    }
+
+    function memberCard(m) {
+      const li = el('li');
+      const card = el('article', 'card');
+
+      const photo = el('div', 'photo');
+      const initials = el('span', 'initials', initialsOf(m.name));
+      initials.setAttribute('aria-hidden', 'true');
+      photo.append(initials);
+      if (PHOTO.test(m.photo || '')) {
+        const img = new Image();
+        img.alt = 'Photo of ' + m.name;
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        img.addEventListener('error', () => img.remove());
+        img.src = m.photo;
+        photo.append(img);
+      }
+      photo.append(el('span', 'year', m.year));
+
+      const body = el('div', 'body');
+      body.append(el('h2', 'name', m.name));
+      if (m.title) body.append(el('p', 'role', m.title));
+
+      const details = el('dl');
+      details.append(el('dt', 'sr', 'Major'), el('dd', 'major', m.major));
+      details.append(el('dt', 'sr', 'Hometown'), el('dd', 'hometown', m.hometown));
+      body.append(details);
+
+      if (LINKEDIN.test(m.linkedin || '')) {
+        const link = el('a', 'link', 'LinkedIn profile');
+        link.href = m.linkedin;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.setAttribute('aria-label', m.name + ' on LinkedIn (opens in a new tab)');
+        body.append(link);
+      }
+
+      card.append(photo, body);
+      li.append(card);
+      return li;
+    }
+
+    function openSlot() {
+      const li = el('li');
+      const card = el('article', 'card open');
+      card.append(el('h2', 'name', 'Your card'));
+      card.append(el('p', '', 'Fork the repo, add cards/your-name.json and a photo, then open a pull request.'));
+      const link = el('a', 'link', 'Read the steps');
+      link.href = REPO + '/blob/main/CONTRIBUTING.md';
+      card.append(link);
+      li.append(card);
+      return li;
+    }
+
+    async function load() {
+      const count = document.getElementById('count');
+      const grid = document.getElementById('grid');
+      const notice = document.getElementById('notice');
+      try {
+        const res = await fetch('cards.json?t=' + Date.now(), { cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const members = await res.json();
+        if (!Array.isArray(members)) throw new Error('cards.json is not a list');
+
+        grid.replaceChildren(...members.map(memberCard), openSlot());
+        count.textContent =
+          members.length === 0 ? 'No members yet' :
+          members.length === 1 ? '1 member' :
+          members.length + ' members';
+      } catch (err) {
+        count.textContent = '';
+        const box = el('p', 'notice');
+        box.append('Could not load cards.json. If you opened this file straight from disk, serve the folder instead: run ');
+        box.append(el('code', '', 'python3 -m http.server'));
+        box.append(' in the repo folder, then open ');
+        box.append(el('code', '', 'http://localhost:8000'));
+        box.append('.');
+        box.setAttribute('role', 'alert');
+        notice.replaceChildren(box);
+        console.error(err);
+      }
+    }
+
+    load();
+  </script>
+</body>
+</html>
